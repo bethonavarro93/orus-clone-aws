@@ -25,6 +25,7 @@ import { NotificationsMenu } from "./NotificationsMenu";
 import { SettingsMenu } from "./SettingsMenu";
 import { SupportMenu } from "./SupportMenu";
 import { RegionSelector } from "./RegionSelector";
+import { MegaMenu } from "./MegaMenu";
 import { mockSearchResults, mockNotifications } from "@/data/mockData";
 import type { Tab, UserSettings } from "@/types/header";
 
@@ -385,51 +386,10 @@ export const Header: FC = () => {
 
       {/* Mega Menu */}
       {isMegaMenuOpen && (
-        <div className="fixed inset-0 z-50 flex">
-          {/* Overlay */}
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50"
-            onClick={() => setIsMegaMenuOpen(false)}
-          />
-
-          {/* Menu Content */}
-          <div className="relative w-[300px] h-screen bg-[#232f3e] border-r border-gray-700 overflow-y-auto">
-            <div className="p-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-gray-300">
-                  Servicios AWS
-                </h3>
-                <button
-                  onClick={() => setIsMegaMenuOpen(false)}
-                  className="text-gray-400 hover:text-white"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-              {/* Contenido del mega menú */}
-              <div className="space-y-4">
-                {mockSearchResults.map((service) => (
-                  <div
-                    key={service.id}
-                    className="flex items-center p-2 hover:bg-[#2a3f59] rounded-sm cursor-pointer"
-                  >
-                    <div
-                      className={`w-8 h-8 ${service.color} rounded mr-3 flex items-center justify-center text-xs font-bold text-white`}
-                    >
-                      {service.icon}
-                    </div>
-                    <div>
-                      <div className="text-sm text-white">{service.name}</div>
-                      <div className="text-xs text-gray-400">
-                        {service.description}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
+        <MegaMenu
+          isOpen={isMegaMenuOpen}
+          onClose={() => setIsMegaMenuOpen(false)}
+        />
       )}
     </header>
   );
