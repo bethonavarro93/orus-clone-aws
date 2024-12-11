@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* Header Styles */
+  .aws-header-button {
+    @apply hover:text-[#ec7211] transition-colors duration-150;
+  }
+
+  .aws-menu-item {
+    @apply flex items-center space-x-2 px-3 py-2 text-sm text-gray-300 hover:bg-[#2a3f59] hover:text-white rounded-sm transition-colors duration-150;
+  }
+
+  .aws-dropdown {
+    @apply absolute right-0 mt-2 bg-[#232f3e] border border-gray-700 shadow-lg rounded-md z-50;
+  }
+
+  /* Search Input Focus Ring */
+  .search-input:focus {
+    @apply ring-1 ring-[#527ac7] ring-offset-0;
+  }
+}
+
+/* Keyboard shortcut tooltip */
+[data-shortcut]:hover::after {
+  content: attr(data-shortcut);
+  @apply absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 text-xs bg-gray-800 text-white rounded shadow-lg;
+}
