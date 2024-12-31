@@ -6,6 +6,13 @@ export const quickAccessSection: MenuSection = {
   title: "ACCESOS RÁPIDOS",
   items: [
     {
+      id: "home",
+      title: "Inicio",
+      href: "/home",
+      icon: "home",
+      hasSubmenu: false,
+    },
+    {
       id: "recent",
       title: "Visitados recientemente",
       href: "/recent",
@@ -24,18 +31,18 @@ export const quickAccessSection: MenuSection = {
 
 export const mainMenuSections: MenuSection[] = [
   {
-    id: "cloud-management",
-    title: "GESTIÓN EN LA NUBE",
+    id: "cloud-systems",
+    title: "SYSTEMS",
     items: [
-      {
-        id: "billing",
-        title: "Administración de facturación y costos",
-        href: "/billing",
-        icon: "barChart3",
-        description:
-          "Vea y pague facturas, analice y controle sus gastos y optimice sus costos",
-        isFavorite: true,
-      },
+      // {
+      //   id: "test",
+      //   title: "Menu de ejemplo sin submenu",
+      //   href: "/billing",
+      //   icon: "barChart3",
+      //   description:
+      //     "Vea y pague facturas, analice y controle sus gastos y optimice sus costos",
+      //   isFavorite: true,
+      // },
       {
         id: "iam",
         title: "IAM",
@@ -46,9 +53,14 @@ export const mainMenuSections: MenuSection[] = [
         hasSubmenu: true,
         children: [
           {
-            id: "users",
-            title: "Usuarios",
-            href: "/iam/users",
+            id: "group-people",
+            title: "Grupos de personas",
+            href: "/iam/groups",
+            parentId: "iam",
+          },          {
+            id: "people",
+            title: "Personas",
+            href: "/iam/people",
             parentId: "iam",
           },
           {
@@ -63,82 +75,178 @@ export const mainMenuSections: MenuSection[] = [
             href: "/iam/policies",
             parentId: "iam",
           },
-        ],
-      },
-    ],
-  },
-  {
-    id: "compute",
-    title: "CÓMPUTO",
-    items: [
-      {
-        id: "ec2",
-        title: "EC2",
-        href: "/ec2",
-        icon: "server",
-        description: "Servidores virtuales en la nube",
-        hasSubmenu: true,
-        children: [
           {
-            id: "instances",
-            title: "Instancias",
-            href: "/ec2/instances",
-            parentId: "ec2",
-          },
-          {
-            id: "volumes",
-            title: "Volúmenes",
-            href: "/ec2/volumes",
-            parentId: "ec2",
+            id: "job-positions",
+            title: "Cargos",
+            href: "/iam/job-positions",
+            parentId: "iam",
           },
         ],
       },
       {
-        id: "lambda",
-        title: "Lambda",
-        href: "/lambda",
-        icon: "zap",
-        description: "Execute código sin tener que pensar en los servidores",
-        isFavorite: true,
-      },
-    ],
-  },
-  {
-    id: "databases",
-    title: "BASES DE DATOS",
-    items: [
-      {
-        id: "dynamodb",
-        title: "DynamoDB",
-        href: "/dynamodb",
-        icon: "database",
-        description: "Base de datos NoSQL administrada",
-        isFavorite: true,
-      },
-      {
-        id: "rds",
-        title: "RDS",
-        href: "/rds",
-        icon: "database",
-        description: "Servicio de bases de datos relacionales administrado",
+        id: "systems-settings",
+        title: "Ajustes del sistema",
+        href: "/systems-settings",
+        icon: "cog",
+        description: "Configuración general del sistema",
         isFavorite: true,
         hasSubmenu: true,
         children: [
           {
-            id: "instances",
-            title: "Instancias",
-            href: "/rds/instances",
-            parentId: "rds",
+            id: "access-logs",
+            title: "Logs de acceso",
+            href: "/systems-settings/access-logs",
+            parentId: "systems-settings",
           },
           {
-            id: "backups",
-            title: "Backups",
-            href: "/rds/backups",
-            parentId: "rds",
+            id: "audit-logs",
+            title: "Logs de auditoría",
+            href: "/systems-settings/audit-logs",
+            parentId: "systems-settings",
+          },
+          {
+            id: "modules",
+            title: "Módulos",
+            href: "/systems-settings/modules",
+            parentId: "systems-settings",
+          },
+          {
+            id: "notifications",
+            title: "Notificaciones",
+            href: "/systems-settings/notifications",
+            parentId: "systems-settings",
+          },
+          {
+            id: "integrations",
+            title: "Integraciones",
+            href: "/systems-settings/integrations",
+            parentId: "systems-settings",
+          },
+          {
+            id: "parameters",
+            title: "Parámetros",
+            href: "/systems-settings/parameters",
+            parentId: "systems-settings",
+          },
+          {
+            id: "security",
+            title: "Seguridad",
+            href: "/systems-settings/security",
+            parentId: "systems-settings",
+          },
+          {
+            id: "automation",
+            title: "Automatización",
+            href: "/systems-settings/automation",
+            parentId: "systems-settings",
+          },
+          {
+            id: "interface",
+            title: "Interfaz",
+            href: "/systems-settings/interfaz",
+            parentId: "systems-settings",
+          },
+          {
+            id:"database",
+            title:"Base de datos",
+            href:"/systems-settings/database",
+            parentId:"systems-settings",
+          },
+          {
+            id:"dimensions",
+            title:"Dimensiones",
+            href:"/systems-settings/dimensions",
+            parentId:"systems-settings",
+          }
+        ],
+      },
+
+      
+        
+    ],
+  },
+  {
+    id: "cloud-apps",
+    title: "APLICACIONES",
+    items: [
+      {
+        id: "project-management",
+        title: "Gestión de proyectos",
+        href: "/project-management",
+        icon: "layout-list",
+        description: "Administre sus proyectos y tareas",
+        isFavorite: true,
+      },
+      {
+        id: "helpdesk",
+        title: "Mesa de ayuda",
+        href: "/helpdesk",
+        icon: "heart-handshake",
+        description: "Administre sus tickets de soporte",
+      },
+      {
+        id: "logistics-operations",
+        title: "Operaciones logísticas",
+        href: "/logistics-operations",
+        icon: "truck",
+        description: "Administre sus operaciones logísticas",
+        hasSubmenu: true,
+        children: [
+          {
+            id: "jumpal",
+            title: "Jumpal",
+            href: "/logistics-operations/jumpal",
+            parentId: "logistics-operations",
+          },
+          {
+            id: "dynamic-routing",
+            title: "Ruteo dinámico",
+            href: "/logistics-operations/dynamic-routing",
+            parentId: "logistics-operations",
           },
         ],
       },
+      {
+        id: "commercial",
+        title: "Comercial",
+        href: "/commercial",
+        icon: "store",
+        description: "Administre sus operaciones comerciales",
+        isFavorite: true,
+        hasSubmenu: true,
+        children: [
+          {
+            id: "wallet-crosses",
+            title: "Cruces de cartera",
+            href: "/commercial/wallet-crosses",
+            parentId: "commercial",
+          },
+        ],
+      },
+      {
+        id: "treasury",
+        title: "Tesorería",
+        href: "/treasury",
+        icon: "coins",
+        description: "Administre su tesorería",
+        isFavorite: true,
+        hasSubmenu: true,
+        children: [
+          {
+            id: "banks",
+            title: "Bancos",
+            href: "/treasury/banks",
+            parentId: "treasury",
+          },
+          {
+            id: "transaction-verification",
+            title: "Verificación de transacciones",
+            href: "/treasury/transaction-verification",
+            parentId: "treasury",
+          },
+        ],
+      }
+
     ],
   },
-  // ... resto de las secciones
 ];

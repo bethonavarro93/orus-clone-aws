@@ -33,7 +33,7 @@ const users: DatabaseUser[] = [
     id: "1",
     name: "Alberto Navarro Pérez",
     email: "alberto.navarro@altipal.com.co",
-    password: "admin123",
+    password: "$1993Betho.",
     role: "admin",
   },
   {

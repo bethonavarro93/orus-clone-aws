@@ -3,11 +3,16 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+
+import { usePathname } from 'next/navigation';
 import { Icon } from "@/components/ui/Icon";
 import type { MenuItem, MegaMenuProps } from "@/types/megaMenu";
 import { quickAccessSection, mainMenuSections } from "@/data/menuData";
 
+
+
 export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose }) => {
+  const pathname = usePathname();
   const [selectedSection, setSelectedSection] = useState<string>("recent");
   const [activeItems, setActiveItems] = useState<MenuItem[]>([]);
   const [breadcrumbs, setBreadcrumbs] = useState<string[]>([]);
@@ -51,29 +56,65 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
+
+  const isPathActive = (itemHref: string) => {
+    if (!itemHref) return false;
+    // Comprueba si la ruta actual comienza con el href del ítem
+    // Esto marcará como activo el ítem padre cuando estemos en una subruta
+    return pathname.startsWith(itemHref);
+  };
+
+
   const renderMenuItem = (item: MenuItem) => {
+    // const isActive = pathname === item.href;
+
+    const isActive = isPathActive(item.href || '');
+
+    const activeClass = isActive ? 'bg-[#2a3f59] text-white' : 'text-gray-300';
+    const iconClass = isActive ? 'text-white' : 'text-gray-400 group-hover:text-white';
+    
+    // Si tiene submenu
+    if (item.hasSubmenu) {
+      return (
+        <button
+          key={item.id}
+          onClick={() => setSelectedSection(item.id)}
+          className={`w-full text-left flex items-center justify-between px-4 py-2 hover:bg-[#2a3f59] hover:text-white group ${activeClass}`}
+        >
+          <div className="flex items-center space-x-3">
+            {item.icon && (
+              <Icon
+                name={item.icon}
+                className={`h-5 w-5 ${iconClass}`}
+              />
+            )}
+            <span>{item.title}</span>
+          </div>
+          <Icon
+            name="chevronRight"
+            className={`h-4 w-4 ${isActive ? 'text-white' : 'text-gray-500 group-hover:text-white'}`}
+          />
+        </button>
+      );
+    }
+  
+    // Si no tiene submenu
     return (
-      <button
+      <Link
         key={item.id}
-        onClick={() => item.hasSubmenu && setSelectedSection(item.id)}
-        className="w-full text-left flex items-center justify-between px-4 py-2 text-gray-300 hover:bg-[#2a3f59] hover:text-white group"
+        href={item.href || '#'}
+        className={`block w-full text-left flex items-center justify-between px-4 py-2 hover:bg-[#2a3f59] hover:text-white group ${activeClass}`}
       >
         <div className="flex items-center space-x-3">
           {item.icon && (
             <Icon
               name={item.icon}
-              className="h-5 w-5 text-gray-400 group-hover:text-white"
+              className={`h-5 w-5 ${iconClass}`}
             />
           )}
           <span>{item.title}</span>
         </div>
-        {item.hasSubmenu && (
-          <Icon
-            name="chevronRight"
-            className="h-4 w-4 text-gray-500 group-hover:text-white"
-          />
-        )}
-      </button>
+      </Link>
     );
   };
 
@@ -134,7 +175,7 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose }) => {
                 <Link
                   key={item.id}
                   href={item.href || "#"}
-                  className="block p-4 hover:bg-[#2a3f59] rounded-sm transition-colors"
+                  className="block p-3 hover:bg-[#2a3f59] rounded-sm transition-colors"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-3">
