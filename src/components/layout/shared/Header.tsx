@@ -131,7 +131,7 @@ export const Header: FC = () => {
 
   // JSX del componente
   return (
-    <header className="bg-[#232f3e] text-white border-b border-gray-700">
+    <header className="bg-[#232f3e] text-white border-b border-gray-700 fixed top-0 left-0 w-full z-50">
       <div className="flex h-[45px] items-center justify-between px-4">
         {/* Left section */}
         <div className="flex items-center space-x-1">

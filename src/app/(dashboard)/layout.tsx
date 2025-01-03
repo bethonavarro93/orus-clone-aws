@@ -9,7 +9,7 @@ export default function DashboardLayout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
-      <div className="flex">
+      <div className="flex mt-16 space-x-4 pt-3">
         {/* <Sidebar /> */}
         <main className="flex-1">
           {children}
