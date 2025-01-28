@@ -9,12 +9,12 @@ export const NotificationsMenu: FC<NotificationsMenuProps> = ({ onClose }) => {
   return (
     <div className="absolute right-0 mt-2 w-[600px] bg-white dark:bg-[#1b2532] border border-gray-200 dark:border-gray-700 shadow-lg rounded-md z-50 transition-colors duration-200">
       <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <h3 className="text-sm font-bold text-gray-900 dark:text-white">
           Notificaciones
-        </h2>
+        </h3>
         <a 
           href="#" 
-          className="text-blue-600 dark:text-[#0073bb] text-sm hover:underline transition-colors duration-200"
+          className="text-[#004d9d] dark:text-[#004d9d] text-sm hover:underline transition-colors duration-200"
         >
           Ver todas las notificaciones
         </a>
@@ -22,19 +22,18 @@ export const NotificationsMenu: FC<NotificationsMenuProps> = ({ onClose }) => {
 
       <div className="p-6 text-center">
         <h3 className="text-lg mb-2 text-gray-900 dark:text-white">
-          Le damos la bienvenida a AWS User Notifications
+          Le damos la bienvenida al centro de notificaciones de ORUS
         </h3>
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-          Una ubicación central para sus notificaciones de AWS en la Consola de
-          administración de AWS. Las notificaciones se pueden enviar por correo
+          Una ubicación central para sus notificaciones de ORUS. Las notificaciones se pueden enviar por correo
           electrónico, dispositivos móviles y canales de chat.
         </p>
-        <button className="bg-blue-600 dark:bg-[#0073bb] text-white px-4 py-2 rounded hover:bg-blue-700 dark:hover:bg-[#0073bb]/90 transition-colors duration-200">
+        <button className="bg-[#004d9d] dark:bg-[#004d9d] text-white px-4 py-2 rounded hover:bg-blue-700 dark:hover:bg-[#004d9d]/90 transition-colors duration-200">
           Comience a usar User Notifications
         </button>
       </div>
 
-      <div className="border-t border-gray-200 dark:border-gray-700">
+      {/* <div className="border-t border-gray-200 dark:border-gray-700">
         <div className="p-4">
           <h3 className="text-sm font-medium mb-4 text-gray-900 dark:text-white">
             Eventos de estado
@@ -60,7 +59,7 @@ export const NotificationsMenu: FC<NotificationsMenuProps> = ({ onClose }) => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

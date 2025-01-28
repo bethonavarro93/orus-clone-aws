@@ -55,7 +55,7 @@ export const RegionSelector = () => {
     <div className="relative region-selector">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-1 text-sm text-white dark:text-white hover:text-[#ec7211] dark:hover:text-[#ec7211] transition-colors duration-200"
+        className="flex items-center space-x-1 text-sm text-white dark:text-white hover:text-[#ffc26b] dark:hover:text-[#ffc26b] transition-colors duration-200"
       >
         <Building className="h-4 w-4" />
         <span>
@@ -88,8 +88,8 @@ export const RegionSelector = () => {
                       cedi.disabled
                         ? "text-gray-400 dark:text-gray-500 cursor-not-allowed"
                         : selectedCedi.code === cedi.code
-                        ? "bg-gray-100 dark:bg-[#2a3f59] text-gray-900 dark:text-white"
-                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#2a3f59] hover:text-gray-900 dark:hover:text-white"
+                        ? "bg-[#e1e2e4] dark:bg-[#2a3f59] text-gray-900 dark:text-white"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-[#e1e2e4] dark:hover:bg-[#2a3f59] hover:text-gray-900 dark:hover:text-white"
                     }`}
                   >
                     <div className="flex items-center">

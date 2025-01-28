@@ -51,5 +51,7 @@ Color claro: #bddefd
 Color alterno: #ffc26b
 Color alterno 2:#2ee4d8
 
+btn hover hover:bg-blue-700
+
 
 

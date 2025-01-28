@@ -14,7 +14,7 @@ export const SettingsMenu: FC<SettingsMenuProps> = ({ onClose }) => {
   return (
     <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-[#1b2532] border border-gray-200 dark:border-gray-700 shadow-lg rounded-md z-50">
       <div className="p-4">
-        <h3 className="text-sm font-medium mb-4 text-gray-900 dark:text-white">
+        <h3 className="text-sm font-bold mb-4 text-gray-900 dark:text-white">
           Configuración actual del usuario
         </h3>
 
