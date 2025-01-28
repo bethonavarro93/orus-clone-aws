@@ -9,7 +9,7 @@ import { AppDrawer } from "./components/AppDrawer";
 import { BirthdaysCard } from "./components/BirthdaysCard";
 import { UpcomingEvents } from "./components/UpcomingEvents";
 
-// Datos de ejemplo para las actividades
+// Los datos de activities se mantienen igual
 const activities = [
   {
     id: "1",
@@ -39,14 +39,16 @@ const activities = [
 
 export default function HomePage() {
   return (
-    <div className="flex flex-col min-h-screen bg-[#0f1b2d]">
+    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-[#0f1b2d] transition-colors duration-200">
       {/* Main Content */}
       <div className="flex-1 p-6">
         <div className="max-w-7xl mx-auto">
           {/* Page Header */}
           <div className="mb-6">
-            <h1 className="text-2xl font-normal text-white mb-2">Feed Corporativo</h1>
-            <p className="text-gray-400">
+            <h1 className="text-2xl font-normal text-gray-900 dark:text-white mb-2 transition-colors">
+              Feed Corporativo
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 transition-colors">
               Mantente al día con las últimas actualizaciones y noticias de la empresa
             </p>
           </div>

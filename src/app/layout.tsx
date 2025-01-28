@@ -3,19 +3,22 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { LayoutProps } from "@/types/layout";
 import { NextAuthProvider } from "@/components/providers/AuthProvider";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "AWS Console Clone",
-  description: "AWS Console Clone built with Next.js 14",
+  title: "ORUS V2",
+  description: "ORUS V2",
 };
 
 export default function RootLayout({ children }: LayoutProps) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <NextAuthProvider>{children}</NextAuthProvider>
+        <ThemeProvider>
+          <NextAuthProvider>{children}</NextAuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

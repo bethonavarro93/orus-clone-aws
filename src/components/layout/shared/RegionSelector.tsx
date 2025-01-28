@@ -1,4 +1,3 @@
-// src/components/layout/shared/RegionSelector.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -41,7 +40,6 @@ export const RegionSelector = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCedi, setSelectedCedi] = useState(cediLocations[0].cedis[0]);
 
-  // Click fuera para cerrar el menú
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (!event.target?.closest(".region-selector")) {
@@ -57,7 +55,7 @@ export const RegionSelector = () => {
     <div className="relative region-selector">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-1 text-sm hover:text-[#ec7211]"
+        className="flex items-center space-x-1 text-sm text-white dark:text-white hover:text-[#ec7211] dark:hover:text-[#ec7211] transition-colors duration-200"
       >
         <Building className="h-4 w-4" />
         <span>
@@ -67,13 +65,13 @@ export const RegionSelector = () => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-[#232f3e] border border-gray-700 shadow-lg rounded-md z-50">
+        <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-[#232f3e] border border-gray-200 dark:border-gray-700 shadow-lg rounded-md z-50">
           {cediLocations.map((countryGroup) => (
             <div
               key={countryGroup.country}
-              className="border-b border-gray-700 last:border-b-0"
+              className="border-b border-gray-200 dark:border-gray-700 last:border-b-0"
             >
-              <div className="px-4 py-2 text-sm font-semibold text-gray-400">
+              <div className="px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-400">
                 {countryGroup.country}
               </div>
               <div className="pb-2">
@@ -86,27 +84,29 @@ export const RegionSelector = () => {
                         setIsOpen(false);
                       }
                     }}
-                    className={`w-full flex items-center justify-between px-4 py-2 text-sm ${
+                    className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors duration-200 ${
                       cedi.disabled
-                        ? "text-gray-500 cursor-not-allowed"
+                        ? "text-gray-400 dark:text-gray-500 cursor-not-allowed"
                         : selectedCedi.code === cedi.code
-                        ? "bg-[#2a3f59] text-white"
-                        : "text-gray-300 hover:bg-[#2a3f59] hover:text-white"
+                        ? "bg-gray-100 dark:bg-[#2a3f59] text-gray-900 dark:text-white"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#2a3f59] hover:text-gray-900 dark:hover:text-white"
                     }`}
                   >
                     <div className="flex items-center">
                       {cedi.disabled && <Lock className="h-3 w-3 mr-2" />}
                       <span>{cedi.city}</span>
                     </div>
-                    <span className="text-xs text-gray-500">{cedi.code}</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-500">
+                      {cedi.code}
+                    </span>
                   </button>
                 ))}
               </div>
             </div>
           ))}
-          <div className="p-2 border-t border-gray-700">
+          <div className="p-2 border-t border-gray-200 dark:border-gray-700">
             <button
-              className="w-full text-left px-2 py-1 text-sm text-[#0073bb] hover:underline"
+              className="w-full text-left px-2 py-1 text-sm text-blue-600 dark:text-[#0073bb] hover:underline transition-colors duration-200"
               onClick={() => setIsOpen(false)}
             >
               Administrar CEDIs
