@@ -1,8 +1,7 @@
-// src/lib/auth.ts
 import NextAuth from "next-auth";
 import type { NextAuthConfig, Session, User as NextAuthUser } from "next-auth";
-// import type { JWT } from "next-auth/jwt";
 import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
 
 interface DatabaseUser {
   id: string;
@@ -12,7 +11,6 @@ interface DatabaseUser {
   role: string;
 }
 
-// Extender el tipo User de NextAuth
 interface User extends NextAuthUser {
   id: string;
   role: string;
@@ -48,6 +46,10 @@ const users: DatabaseUser[] = [
 export const config = {
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
     Credentials({
       name: "Credentials",
       credentials: {
@@ -83,15 +85,15 @@ export const config = {
   callbacks: {
     async jwt({ token, user, trigger }) {
       if (trigger === "signIn" && user) {
-        token.id = user.id;
-        token.role = user.role;
+        token.id = user.id || token.sub;
+        token.role = user.role || 'user';
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
-        session.user.role = token.role as string;
+        session.user.role = (token.role as string) || 'user';
       }
       return session;
     },
@@ -106,5 +108,4 @@ export const config = {
 
 export const { handlers, auth, signIn, signOut } = NextAuth(config);
 
-// Exportar tipos para uso en otros archivos
 export type { User, ExtendedSession };

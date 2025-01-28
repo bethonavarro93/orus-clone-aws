@@ -34,3 +34,22 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+
+
+
+
+ajustes:
+
+Color primario, sirve para botones: #004d9d
+Color secundario : #213059
+Color secundario 2 : #314780
+Color Oscuro: #16213d
+Color Claro sirve para hover, click: #7eb4ef
+Color claro: #bddefd
+Color alterno: #ffc26b
+Color alterno 2:#2ee4d8
+
+
+
