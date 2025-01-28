@@ -62,7 +62,7 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose }) => {
       : 'text-gray-100 dark:text-gray-300';
     const iconClass = isActive 
       ? 'text-gray-900 dark:text-white' 
-      : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white';
+      : 'text-gray-100 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white';
     
     if (item.hasSubmenu) {
       return (
@@ -114,7 +114,7 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose }) => {
       <div className="fixed inset-0 bg-black/50 dark:bg-black/50" onClick={onClose} />
       <div className="flex relative">
         {/* Left Navigation */}
-        <div className="w-[280px] h-screen bg-[#0f1b2d] dark:bg-[#0f1b2d] overflow-y-auto transition-colors duration-200">
+        <div className="w-[280px] h-screen bg-[#004d9d] dark:bg-[#0f1b2d] overflow-y-auto transition-colors duration-200">
           <div className="py-4">
             {/* Quick Access Section */}
             <div className="mb-4">
@@ -173,7 +173,7 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose }) => {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-3">
                       {item.icon && (
-                        <div className="w-8 h-8 rounded bg-[#2a3f59] dark:bg-[#2a3f59] flex items-center justify-center">
+                        <div className="w-8 h-8 rounded bg-[#004d9d] dark:bg-[#2a3f59] flex items-center justify-center">
                           <Icon
                             name={item.icon}
                             className="h-5 w-5 text-white dark:text-white"

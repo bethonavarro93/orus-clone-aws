@@ -174,10 +174,12 @@ export const Header: FC = () => {
             )}
             {/* Search Results */}
             {isSearchOpen && searchQuery.length >= 2 && (
-              <div className="search-results absolute top-[40px] left-[0px] w-[600px] bg-[#fff] border border-gray-700 shadow-lg rounded-md z-50">
+              <div className="search-results absolute top-[40px] left-[0px] w-[600px] bg-[#fff] border border-gray-700 shadow-lg rounded-md z-50 dark:bg-[#1b2532]">
                 <div className="p-2">
                   <div className="flex justify-between items-center mb-2 px-2">
-                    <span className="text-xs text-gray-500">Resultado de busqueda</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-100">
+                      Resultado de busqueda
+                      </span>
                     <span className="text-xs text-[#004d9d]">
                       Ver los {mockSearchResults.length} resultados
                     </span>
