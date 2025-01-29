@@ -5,14 +5,13 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { 
-  Eye, 
-  EyeOff, 
-  Mail, 
+import {
+  Eye,
+  EyeOff,
+  Mail,
   Lock,
   AlertCircle,
   ArrowRight,
-  Info
 } from "lucide-react";
 
 export default function LoginPage() {
@@ -86,16 +85,28 @@ export default function LoginPage() {
               Accede a todas las herramientas y aplicativos desde un solo lugar
             </p>
           </div>
-          
+
           {/* Características destacadas */}
           <div className="grid grid-cols-2 gap-6">
             {[
-              { title: 'Gestión Integral', desc: 'Control total de tu negocio' },
-              { title: 'Reportes en tiempo real', desc: 'Datos actualizados al instante' },
-              { title: 'Seguridad Avanzada', desc: 'Protección de datos garantizada' },
-              { title: 'Soporte 24/7', desc: 'Asistencia cuando la necesites' }
+              {
+                title: "Gestión Integral",
+                desc: "Control total de tu negocio",
+              },
+              {
+                title: "Reportes en tiempo real",
+                desc: "Datos actualizados al instante",
+              },
+              {
+                title: "Seguridad Avanzada",
+                desc: "Protección de datos garantizada",
+              },
+              { title: "Soporte 24/7", desc: "Asistencia cuando la necesites" },
             ].map((feature, index) => (
-              <div key={index} className="p-4 rounded-lg bg-white/10 backdrop-blur-sm">
+              <div
+                key={index}
+                className="p-4 rounded-lg bg-white/10 backdrop-blur-sm"
+              >
                 <h3 className="text-white font-medium mb-1">{feature.title}</h3>
                 <p className="text-blue-100 text-sm">{feature.desc}</p>
               </div>
@@ -106,8 +117,7 @@ export default function LoginPage() {
 
       {/* Panel derecho con formulario */}
       <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-8 py-12 bg-gray-50">
-
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
           {/* Logo versión móvil */}
           <div className="lg:hidden flex justify-center mb-8">
             <Image
@@ -259,7 +269,10 @@ export default function LoginPage() {
           {/* Footer */}
           <div className="mt-8 text-center">
             <div className="flex items-center justify-center gap-6 text-sm text-gray-500">
-              <Link href="#" className="hover:text-gray-700 transition-colors flex items-center gap-1">
+              <Link
+                href="#"
+                className="hover:text-gray-700 transition-colors flex items-center gap-1"
+              >
                 Información
               </Link>
               <Link href="#" className="hover:text-gray-700 transition-colors">

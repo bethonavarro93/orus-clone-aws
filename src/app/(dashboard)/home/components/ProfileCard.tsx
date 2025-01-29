@@ -24,7 +24,7 @@ export function ProfileCard() {
     image: "/avatars/default.png",
     badges: ["Pro User", "Admin"],
     status: "Online",
-    location: "Madrid, ES"
+    location: "Madrid, ES",
   };
 
   const stats: Stats[] = [
@@ -35,8 +35,8 @@ export function ProfileCard() {
       color: {
         icon: "text-blue-500 dark:text-blue-400",
         bg: "bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40",
-        ring: "ring-blue-100 dark:ring-blue-900/50"
-      }
+        ring: "ring-blue-100 dark:ring-blue-900/50",
+      },
     },
     {
       label: "Proyectos",
@@ -45,8 +45,8 @@ export function ProfileCard() {
       color: {
         icon: "text-emerald-500 dark:text-emerald-400",
         bg: "bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40",
-        ring: "ring-emerald-100 dark:ring-emerald-900/50"
-      }
+        ring: "ring-emerald-100 dark:ring-emerald-900/50",
+      },
     },
     {
       label: "Rating",
@@ -55,9 +55,9 @@ export function ProfileCard() {
       color: {
         icon: "text-amber-500 dark:text-amber-400",
         bg: "bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/40",
-        ring: "ring-amber-100 dark:ring-amber-900/50"
-      }
-    }
+        ring: "ring-amber-100 dark:ring-amber-900/50",
+      },
+    },
   ];
 
   return (
@@ -80,8 +80,14 @@ export function ProfileCard() {
                 height={96}
                 className="rounded-full border-4 border-white dark:border-gray-800 shadow-xl transition-transform duration-300 group-hover:scale-105"
               />
-              <div className={`absolute -bottom-1 -right-1 h-6 w-6 rounded-full border-4 border-white dark:border-gray-800
-                ${defaultUser.status === "Online" ? "bg-emerald-500" : "bg-gray-400"}`}>
+              <div
+                className={`absolute -bottom-1 -right-1 h-6 w-6 rounded-full border-4 border-white dark:border-gray-800
+                ${
+                  defaultUser.status === "Online"
+                    ? "bg-emerald-500"
+                    : "bg-gray-400"
+                }`}
+              >
                 <span className="block w-full h-full animate-pulse" />
               </div>
             </div>
@@ -125,13 +131,18 @@ export function ProfileCard() {
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700/50">
           {stats.map((stat, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className="group/stat relative rounded-lg p-4 transition-all duration-300 hover:scale-105"
             >
-              <div className={`absolute inset-0 rounded-lg ${stat.color.bg} ring-1 ${stat.color.ring} transition-all duration-300 group-hover/stat:shadow-lg`} />
+              <div
+                className={`absolute inset-0 rounded-lg ${stat.color.bg} ring-1 ${stat.color.ring} transition-all duration-300 group-hover/stat:shadow-lg`}
+              />
               <div className="relative flex flex-col items-center">
-                <Icon name={stat.icon} className={`h-6 w-6 ${stat.color.icon} mb-2`} />
+                <Icon
+                  name={stat.icon}
+                  className={`h-6 w-6 ${stat.color.icon} mb-2`}
+                />
                 <p className="text-lg font-bold text-gray-900 dark:text-white">
                   {stat.value}
                 </p>

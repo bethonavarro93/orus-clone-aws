@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from 'next/navigation';
+import { usePathname } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
 import type { MenuItem, MegaMenuProps } from "@/types/megaMenu";
 import { quickAccessSection, mainMenuSections } from "@/data/menuData";
@@ -15,14 +15,15 @@ interface MenuSection {
 }
 
 // Función auxiliar para renderizar el menú
-const renderMenuItem = (item: MenuItem, isActive: boolean, iconClass: string) => {
+const renderMenuItem = (
+  item: MenuItem,
+  isActive: boolean,
+  iconClass: string
+) => {
   return (
     <div className="flex items-center gap-3">
       {item.icon && (
-        <Icon
-          name={item.icon}
-          className={`h-5 w-5 ${iconClass}`}
-        />
+        <Icon name={item.icon} className={`h-5 w-5 ${iconClass}`} />
       )}
       <span>{item.title}</span>
     </div>
@@ -82,7 +83,7 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center">
       {/* Overlay con blur */}
-      <div 
+      <div
         className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
         onClick={onClose}
       />
@@ -96,37 +97,40 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose }) => {
               {/* Sección de Acceso Rápido */}
               <div>
                 <div className="flex items-center gap-2 px-3 mb-3">
-                  <Icon name="zap" className="h-4 w-4 text-blue-200 dark:text-blue-400" />
+                  <Icon
+                    name="zap"
+                    className="h-4 w-4 text-blue-200 dark:text-blue-400"
+                  />
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-blue-100 dark:text-blue-300">
                     {quickAccessSection.title}
                   </h3>
                 </div>
                 <div className="space-y-1">
                   {quickAccessSection.items.map((item) => {
-                    const isActive = isPathActive(item.href || '');
+                    const isActive = isPathActive(item.href || "");
                     return (
                       <button
                         key={item.id}
-                        onClick={() => item.hasSubmenu ? setSelectedSection(item.id) : null}
+                        onClick={() =>
+                          item.hasSubmenu ? setSelectedSection(item.id) : null
+                        }
                         className={`w-full text-left flex items-center justify-between px-4 py-2.5 rounded-lg transition-all duration-200
-                          ${isActive 
-                            ? 'bg-white/20 text-white' 
-                            : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                          ${
+                            isActive
+                              ? "bg-white/20 text-white"
+                              : "text-blue-100 hover:bg-white/10 hover:text-white"
                           }`}
                       >
                         <div className="flex items-center gap-3">
                           {item.icon && (
-                            <Icon 
-                              name={item.icon} 
-                              className="h-5 w-5" 
-                            />
+                            <Icon name={item.icon} className="h-5 w-5" />
                           )}
                           <span>{item.title}</span>
                         </div>
                         {item.hasSubmenu && (
-                          <Icon 
-                            name="chevronRight" 
-                            className="h-4 w-4 opacity-50" 
+                          <Icon
+                            name="chevronRight"
+                            className="h-4 w-4 opacity-50"
                           />
                         )}
                       </button>
@@ -146,9 +150,9 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose }) => {
               {mainMenuSections.map((section) => (
                 <div key={section.id}>
                   <div className="flex items-center gap-2 px-3 mb-3">
-                    <Icon 
-                      name={section.icon || 'folder'} 
-                      className="h-4 w-4 text-blue-200 dark:text-blue-400" 
+                    <Icon
+                      name={section.icon || "folder"}
+                      className="h-4 w-4 text-blue-200 dark:text-blue-400"
                     />
                     <h3 className="text-xs font-semibold uppercase tracking-wider text-blue-100 dark:text-blue-300">
                       {section.title}
@@ -156,30 +160,30 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose }) => {
                   </div>
                   <div className="space-y-1">
                     {section.items.map((item) => {
-                      const isActive = isPathActive(item.href || '');
+                      const isActive = isPathActive(item.href || "");
                       return (
                         <button
                           key={item.id}
-                          onClick={() => item.hasSubmenu ? setSelectedSection(item.id) : null}
+                          onClick={() =>
+                            item.hasSubmenu ? setSelectedSection(item.id) : null
+                          }
                           className={`w-full text-left flex items-center justify-between px-4 py-2.5 rounded-lg transition-all duration-200
-                            ${isActive 
-                              ? 'bg-white/20 text-white' 
-                              : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                            ${
+                              isActive
+                                ? "bg-white/20 text-white"
+                                : "text-blue-100 hover:bg-white/10 hover:text-white"
                             }`}
                         >
                           <div className="flex items-center gap-3">
                             {item.icon && (
-                              <Icon 
-                                name={item.icon} 
-                                className="h-5 w-5" 
-                              />
+                              <Icon name={item.icon} className="h-5 w-5" />
                             )}
                             <span>{item.title}</span>
                           </div>
                           {item.hasSubmenu && (
-                            <Icon 
-                              name="chevronRight" 
-                              className="h-4 w-4 opacity-50" 
+                            <Icon
+                              name="chevronRight"
+                              className="h-4 w-4 opacity-50"
                             />
                           )}
                         </button>
@@ -200,7 +204,9 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose }) => {
               <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                 {breadcrumbs.map((crumb, index) => (
                   <React.Fragment key={index}>
-                    {index > 0 && <Icon name="chevronRight" className="h-4 w-4" />}
+                    {index > 0 && (
+                      <Icon name="chevronRight" className="h-4 w-4" />
+                    )}
                     <span>{crumb}</span>
                   </React.Fragment>
                 ))}
@@ -209,12 +215,12 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose }) => {
                 {breadcrumbs[breadcrumbs.length - 1]}
               </h2>
             </div>
-            
+
             <div className="flex items-center gap-2">
               <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200">
                 <Icon name="search" className="h-5 w-5" />
               </button>
-              <button 
+              <button
                 onClick={onClose}
                 className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
               >
