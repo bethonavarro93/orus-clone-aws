@@ -7,6 +7,28 @@ import { Icon } from "@/components/ui/Icon";
 import type { MenuItem, MegaMenuProps } from "@/types/megaMenu";
 import { quickAccessSection, mainMenuSections } from "@/data/menuData";
 
+interface MenuSection {
+  id: string;
+  title: string;
+  icon?: string;
+  items: MenuItem[];
+}
+
+// Función auxiliar para renderizar el menú
+const renderMenuItem = (item: MenuItem, isActive: boolean, iconClass: string) => {
+  return (
+    <div className="flex items-center gap-3">
+      {item.icon && (
+        <Icon
+          name={item.icon}
+          className={`h-5 w-5 ${iconClass}`}
+        />
+      )}
+      <span>{item.title}</span>
+    </div>
+  );
+};
+
 export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
   const [selectedSection, setSelectedSection] = useState<string>("recent");
@@ -55,159 +77,203 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose }) => {
     return pathname.startsWith(itemHref);
   };
 
-  const renderMenuItem = (item: MenuItem) => {
-    const isActive = isPathActive(item.href || '');
-    const activeClass = isActive 
-      ? 'bg-gray-200 dark:bg-[#2a3f59] text-gray-900 dark:text-white' 
-      : 'text-gray-100 dark:text-gray-300';
-    const iconClass = isActive 
-      ? 'text-gray-900 dark:text-white' 
-      : 'text-gray-100 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white';
-    
-    if (item.hasSubmenu) {
-      return (
-        <button
-          key={item.id}
-          onClick={() => setSelectedSection(item.id)}
-          className={`w-full text-left flex items-center justify-between px-4 py-2 hover:bg-gray-200 dark:hover:bg-[#2a3f59] hover:text-gray-900 dark:hover:text-white group transition-colors duration-200 ${activeClass}`}
-        >
-          <div className="flex items-center space-x-3">
-            {item.icon && (
-              <Icon
-                name={item.icon}
-                className={`h-5 w-5 ${iconClass}`}
-              />
-            )}
-            <span>{item.title}</span>
-          </div>
-          <Icon
-            name="chevronRight"
-            className={`h-4 w-4 ${isActive ? 'text-gray-900 dark:text-white' : 'text-gray-100 dark:text-gray-500 group-hover:text-gray-900 dark:group-hover:text-white'}`}
-          />
-        </button>
-      );
-    }
-  
-    return (
-      <Link
-        key={item.id}
-        href={item.href || '#'}
-        className={`block w-full text-left flex items-center justify-between px-4 py-2 hover:bg-gray-200 dark:hover:bg-[#2a3f59] hover:text-gray-900 dark:hover:text-white group transition-colors duration-200 ${activeClass}`}
-      >
-        <div className="flex items-center space-x-3">
-          {item.icon && (
-            <Icon
-              name={item.icon}
-              className={`h-5 w-5 ${iconClass}`}
-            />
-          )}
-          <span>{item.title}</span>
-        </div>
-      </Link>
-    );
-  };
-
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex">
-      <div className="fixed inset-0 bg-black/50 dark:bg-black/50" onClick={onClose} />
-      <div className="flex relative">
-        {/* Left Navigation */}
-        <div className="w-[280px] h-screen bg-[#004d9d] dark:bg-[#0f1b2d] overflow-y-auto transition-colors duration-200">
-          <div className="py-4">
-            {/* Quick Access Section */}
-            <div className="mb-4">
-              <div className="px-4 py-2 text-xs font-semibold text-gray-100 dark:text-gray-400">
-                {quickAccessSection.title}
-              </div>
-              {quickAccessSection.items.map(renderMenuItem)}
-            </div>
+    <div className="fixed inset-0 z-50 flex items-start justify-center">
+      {/* Overlay con blur */}
+      <div 
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
+        onClick={onClose}
+      />
 
-            {/* Divider */}
-            <div className="border-t border-gray-200 dark:border-gray-700 my-2" />
-
-            {/* Main Sections */}
-            {mainMenuSections.map((section) => (
-              <div key={section.id} className="mb-4">
-                <div className="px-4 py-2 text-xs font-semibold text-gray-100 dark:text-gray-400">
-                  {section.title}
+      {/* Contenedor principal */}
+      <div className="flex relative w-[1280px] h-[90vh] mt-[5vh] rounded-xl overflow-hidden shadow-2xl animate-in slide-in-from-top duration-300">
+        {/* Panel de Navegación Izquierdo */}
+        <div className="w-[320px] bg-gradient-to-b from-blue-600 to-blue-700 dark:from-gray-900 dark:to-gray-800">
+          <div className="h-full overflow-y-auto">
+            <div className="p-6 space-y-6">
+              {/* Sección de Acceso Rápido */}
+              <div>
+                <div className="flex items-center gap-2 px-3 mb-3">
+                  <Icon name="zap" className="h-4 w-4 text-blue-200 dark:text-blue-400" />
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-blue-100 dark:text-blue-300">
+                    {quickAccessSection.title}
+                  </h3>
                 </div>
-                {section.items.map(renderMenuItem)}
+                <div className="space-y-1">
+                  {quickAccessSection.items.map((item) => {
+                    const isActive = isPathActive(item.href || '');
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => item.hasSubmenu ? setSelectedSection(item.id) : null}
+                        className={`w-full text-left flex items-center justify-between px-4 py-2.5 rounded-lg transition-all duration-200
+                          ${isActive 
+                            ? 'bg-white/20 text-white' 
+                            : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                          }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          {item.icon && (
+                            <Icon 
+                              name={item.icon} 
+                              className="h-5 w-5" 
+                            />
+                          )}
+                          <span>{item.title}</span>
+                        </div>
+                        {item.hasSubmenu && (
+                          <Icon 
+                            name="chevronRight" 
+                            className="h-4 w-4 opacity-50" 
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            ))}
+
+              {/* Separador con gradiente */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/10" />
+                </div>
+              </div>
+
+              {/* Secciones Principales */}
+              {mainMenuSections.map((section) => (
+                <div key={section.id}>
+                  <div className="flex items-center gap-2 px-3 mb-3">
+                    <Icon 
+                      name={section.icon || 'folder'} 
+                      className="h-4 w-4 text-blue-200 dark:text-blue-400" 
+                    />
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-blue-100 dark:text-blue-300">
+                      {section.title}
+                    </h3>
+                  </div>
+                  <div className="space-y-1">
+                    {section.items.map((item) => {
+                      const isActive = isPathActive(item.href || '');
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => item.hasSubmenu ? setSelectedSection(item.id) : null}
+                          className={`w-full text-left flex items-center justify-between px-4 py-2.5 rounded-lg transition-all duration-200
+                            ${isActive 
+                              ? 'bg-white/20 text-white' 
+                              : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                            }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            {item.icon && (
+                              <Icon 
+                                name={item.icon} 
+                                className="h-5 w-5" 
+                              />
+                            )}
+                            <span>{item.title}</span>
+                          </div>
+                          {item.hasSubmenu && (
+                            <Icon 
+                              name="chevronRight" 
+                              className="h-4 w-4 opacity-50" 
+                            />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Right Content */}
-        <div className="w-[700px] h-screen bg-gray-50 dark:bg-[#232f3e] overflow-y-auto transition-colors duration-200">
+        {/* Panel de Contenido Derecho */}
+        <div className="flex-1 bg-white dark:bg-gray-900 flex flex-col">
           {/* Header */}
-          <div className="border-b border-gray-200 dark:border-gray-700">
-            <div className="flex justify-between items-center p-4">
-              <div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                  {breadcrumbs.join(" > ")}
-                </div>
-                <h2 className="text-xl text-gray-900 dark:text-white">
-                  {breadcrumbs[breadcrumbs.length - 1]}
-                </h2>
+          <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
+            <div>
+              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                {breadcrumbs.map((crumb, index) => (
+                  <React.Fragment key={index}>
+                    {index > 0 && <Icon name="chevronRight" className="h-4 w-4" />}
+                    <span>{crumb}</span>
+                  </React.Fragment>
+                ))}
               </div>
-              <button
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-1">
+                {breadcrumbs[breadcrumbs.length - 1]}
+              </h2>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200">
+                <Icon name="search" className="h-5 w-5" />
+              </button>
+              <button 
                 onClick={onClose}
-                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white p-2 hover:bg-gray-200 dark:hover:bg-[#2a3f59] rounded-sm transition-colors duration-200"
+                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
               >
                 <Icon name="x" className="h-5 w-5" />
               </button>
             </div>
           </div>
 
-          {/* Content Grid */}
-          <div className="p-6">
-            <div className="grid grid-cols-1 gap-4">
-              {activeItems.map((item) => (
-                <Link
-                  key={item.id}
-                  href={item.href || "#"}
-                  className="block p-3 hover:bg-gray-200 dark:hover:bg-[#2a3f59] rounded-sm transition-colors duration-200"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-3">
+          {/* Grid de Contenido */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="p-6">
+              <div className="grid grid-cols-2 gap-4">
+                {activeItems.map((item) => (
+                  <Link
+                    key={item.id}
+                    href={item.href || "#"}
+                    className="group relative p-4 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-blue-500 dark:hover:border-blue-500 hover:shadow-lg transition-all duration-200"
+                  >
+                    <div className="flex items-start gap-4">
                       {item.icon && (
-                        <div className="w-8 h-8 rounded bg-[#004d9d] dark:bg-[#2a3f59] flex items-center justify-center">
+                        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                           <Icon
                             name={item.icon}
-                            className="h-5 w-5 text-white dark:text-white"
+                            className="h-6 w-6 text-white"
                           />
                         </div>
                       )}
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <h3 className="text-gray-900 dark:text-white font-medium">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="text-base font-medium text-gray-900 dark:text-white">
                             {item.title}
                           </h3>
                           {item.isFavorite && (
                             <Icon
                               name="star"
-                              className="h-4 w-4 text-[#ec7211]"
+                              className="h-4 w-4 text-yellow-400"
                             />
                           )}
                         </div>
                         {item.description && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
                             {item.description}
                           </p>
                         )}
                       </div>
+                      {item.hasSubmenu && (
+                        <div className="absolute top-1/2 right-4 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                          <div className="p-2 rounded-full bg-blue-50 dark:bg-blue-900/30">
+                            <Icon
+                              name="chevronRight"
+                              className="h-4 w-4 text-blue-500 dark:text-blue-400"
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    {item.hasSubmenu && (
-                      <Icon
-                        name="chevronRight"
-                        className="h-5 w-5 text-gray-400 dark:text-gray-400"
-                      />
-                    )}
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
         </div>
