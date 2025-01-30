@@ -48,40 +48,40 @@ export const mainMenuSections: MenuSection[] = [
         title: "IAM",
         href: "/iam",
         icon: "shield",
-        description: "Administrar el acceso a los recursos de AWS",
+        description: "Administrar el acceso a los recursos de ORUS",
         isFavorite: true,
-        hasSubmenu: true,
-        children: [
-          {
-            id: "group-people",
-            title: "Grupos de personas",
-            href: "/iam/groups",
-            parentId: "iam",
-          },          {
-            id: "people",
-            title: "Personas",
-            href: "/iam/people",
-            parentId: "iam",
-          },
-          {
-            id: "roles",
-            title: "Roles",
-            href: "/iam/roles",
-            parentId: "iam",
-          },
-          {
-            id: "policies",
-            title: "Políticas",
-            href: "/iam/policies",
-            parentId: "iam",
-          },
-          {
-            id: "job-positions",
-            title: "Cargos",
-            href: "/iam/job-positions",
-            parentId: "iam",
-          },
-        ],
+        hasSubmenu: false,
+        // children: [
+        //   {
+        //     id: "group-people",
+        //     title: "Grupos de personas",
+        //     href: "/iam/groups",
+        //     parentId: "iam",
+        //   },          {
+        //     id: "people",
+        //     title: "Personas",
+        //     href: "/iam/people",
+        //     parentId: "iam",
+        //   },
+        //   {
+        //     id: "roles",
+        //     title: "Roles",
+        //     href: "/iam/roles",
+        //     parentId: "iam",
+        //   },
+        //   {
+        //     id: "policies",
+        //     title: "Políticas",
+        //     href: "/iam/policies",
+        //     parentId: "iam",
+        //   },
+        //   {
+        //     id: "job-positions",
+        //     title: "Cargos",
+        //     href: "/iam/job-positions",
+        //     parentId: "iam",
+        //   },
+        // ],
       },
       {
         id: "systems-settings",

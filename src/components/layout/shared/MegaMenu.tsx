@@ -164,15 +164,20 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose }) => {
                       return (
                         <button
                           key={item.id}
-                          onClick={() =>
-                            item.hasSubmenu ? setSelectedSection(item.id) : null
-                          }
+                          onClick={() => {
+                            if (item.hasSubmenu) {
+                              setSelectedSection(item.id);
+                            } else if (item.href) {
+                              window.location.href = item.href; // Redirige si no tiene submenú
+                            }
+                          }}
                           className={`w-full text-left flex items-center justify-between px-4 py-2.5 rounded-lg transition-all duration-200
-                            ${
-                              isActive
-                                ? "bg-white/20 text-white"
-                                : "text-blue-100 hover:bg-white/10 hover:text-white"
-                            }`}
+    ${
+      isActive
+        ? "bg-white/20 text-white"
+        : "text-blue-100 hover:bg-white/10 hover:text-white"
+    }
+  `}
                         >
                           <div className="flex items-center gap-3">
                             {item.icon && (
