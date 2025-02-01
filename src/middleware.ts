@@ -8,7 +8,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Lista de rutas públicas
-  const publicRoutes = ["/login", "/register", "/forgot-password"];
+  const publicRoutes = ["/login", "/register", "/forgot-password", "/two-factor", "/session-expired", "/account-pending"];
   const isPublicRoute = publicRoutes.includes(pathname);
 
   // Si está autenticado y trata de acceder a rutas públicas
