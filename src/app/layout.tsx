@@ -5,6 +5,7 @@ import { LayoutProps } from "@/types/layout";
 import { NextAuthProvider } from "@/components/providers/AuthProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { LoadingProvider } from "@/components/providers/LoadingProvider";
+import { SessionExpirationProvider } from "@/components/providers/SessionExpirationProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,7 +20,9 @@ export default function RootLayout({ children }: LayoutProps) {
       <body className={inter.className}>
         <ThemeProvider>
           <NextAuthProvider>
-            <LoadingProvider>{children}</LoadingProvider>
+            <SessionExpirationProvider>
+              <LoadingProvider>{children}</LoadingProvider>
+            </SessionExpirationProvider>
           </NextAuthProvider>
         </ThemeProvider>
       </body>

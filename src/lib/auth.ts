@@ -1,5 +1,12 @@
+// src/lib/auth.ts
 import NextAuth from "next-auth";
-import type { NextAuthConfig, Session, User as NextAuthUser } from "next-auth";
+import type {
+  NextAuthConfig,
+  Session,
+  User as NextAuthUser,
+  JWT,
+} from "next-auth";
+import type { AdapterSession } from "@auth/core/adapters";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 
@@ -42,6 +49,10 @@ const users: DatabaseUser[] = [
     role: "user",
   },
 ];
+
+// 3 minutos en segundos para pruebas
+const SESSION_MAXAGE = 3 * 60;
+const JWT_MAXAGE = SESSION_MAXAGE;
 
 export const config = {
   secret: process.env.NEXTAUTH_SECRET,
@@ -86,23 +97,46 @@ export const config = {
     async jwt({ token, user, trigger }) {
       if (trigger === "signIn" && user) {
         token.id = user.id || token.sub;
-        token.role = user.role || 'user';
+        token.role = user.role || "user";
+
+        // Añadir tiempo de expiración al token
+        const now = Math.floor(Date.now() / 1000);
+        token.iat = now;
+        token.exp = now + JWT_MAXAGE;
       }
       return token;
     },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string;
-        session.user.role = (token.role as string) || 'user';
-      }
-      return session;
+    async session({ session, token }): Promise<ExtendedSession> {
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          id: token.id as string,
+          role: (token.role as string) || "user",
+        },
+        expires: new Date(Date.now() + SESSION_MAXAGE * 1000).toISOString(),
+      };
     },
   },
   pages: {
     signIn: "/login",
+    error: "/error",
   },
   session: {
     strategy: "jwt",
+    maxAge: SESSION_MAXAGE,
+  },
+  jwt: {
+    maxAge: JWT_MAXAGE,
+  },
+  events: {
+    signOut(_params: { session: AdapterSession | null }) {
+      console.log("User signed out" + _params);
+    },
+    // Esta es una función personalizada, no un evento real de NextAuth
+    async sessionExpired() {
+      console.log("Session expired");
+    },
   },
 } as NextAuthConfig;
 
