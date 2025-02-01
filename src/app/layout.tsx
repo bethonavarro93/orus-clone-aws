@@ -4,6 +4,7 @@ import "./globals.css";
 import { LayoutProps } from "@/types/layout";
 import { NextAuthProvider } from "@/components/providers/AuthProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { LoadingProvider } from "@/components/providers/LoadingProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,7 +18,9 @@ export default function RootLayout({ children }: LayoutProps) {
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider>
-          <NextAuthProvider>{children}</NextAuthProvider>
+          <NextAuthProvider>
+            <LoadingProvider>{children}</LoadingProvider>
+          </NextAuthProvider>
         </ThemeProvider>
       </body>
     </html>
