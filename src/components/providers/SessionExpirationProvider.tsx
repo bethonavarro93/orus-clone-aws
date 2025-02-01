@@ -6,8 +6,8 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter, usePathname } from "next/navigation";
 
 const LAST_ACTIVE_KEY = "lastActiveTime";
-const INACTIVITY_TIMEOUT = 3 * 60 * 1000; // 3 minutos en milisegundos
-const CHECK_INTERVAL = 10000; // 10 segundos
+const INACTIVITY_TIMEOUT = parseInt(process.env.NEXT_PUBLIC_INACTIVITY_TIMEOUT || "180000", 10);
+const CHECK_INTERVAL = parseInt(process.env.NEXT_PUBLIC_CHECK_INTERVAL || "10000", 10);
 
 interface SessionExpirationProviderProps {
   children: React.ReactNode;

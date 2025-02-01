@@ -4,7 +4,7 @@ import type {
   NextAuthConfig,
   Session,
   User as NextAuthUser,
-  JWT,
+  // JWT,
 } from "next-auth";
 import type { AdapterSession } from "@auth/core/adapters";
 import Credentials from "next-auth/providers/credentials";
@@ -51,7 +51,7 @@ const users: DatabaseUser[] = [
 ];
 
 // 3 minutos en segundos para pruebas
-const SESSION_MAXAGE = 3 * 60;
+const SESSION_MAXAGE = parseInt(process.env.SESSION_MAXAGE || "180", 10);
 const JWT_MAXAGE = SESSION_MAXAGE;
 
 export const config = {
@@ -141,5 +141,7 @@ export const config = {
 } as NextAuthConfig;
 
 export const { handlers, auth, signIn, signOut } = NextAuth(config);
+
+export { SESSION_MAXAGE, JWT_MAXAGE };
 
 export type { User, ExtendedSession };
