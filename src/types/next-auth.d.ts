@@ -1,23 +1,64 @@
-// src/types/next-auth.d.ts
-import type { DefaultSession } from "next-auth";
+import type { DefaultSession, DefaultUser } from "next-auth"
+import type { JWT as DefaultJWT } from "next-auth/jwt"
 
 declare module "next-auth" {
-  interface Session {
+  interface Session extends DefaultSession {
     user: {
       id: string;
-      role: string;
-    } & DefaultSession["user"];
+      dni: string;
+      email: string;
+      nombre_completo: string;
+      numero_contacto: string;
+      fecha_nacimiento?: string;
+      genero?: string;
+      foto_perfil?: string;
+      fecha_creacion: string;
+      fecha_actualizacion?: string;
+      estado: boolean;
+      id_zona_ventas?: string;
+      canal?: string;
+      cargo?: string;
+      gerencia?: string;
+      sitio?: string;
+      codigo_cedi?: string;
+    } & DefaultSession["user"]
   }
 
-  interface User {
-    id: string;
-    role: string;
+  interface User extends DefaultUser {
+    dni: string;
+    nombre_completo: string;
+    numero_contacto: string;
+    fecha_nacimiento?: string;
+    genero?: string;
+    foto_perfil?: string;
+    fecha_creacion: string;
+    fecha_actualizacion?: string;
+    estado: boolean;
+    id_zona_ventas?: string;
+    canal?: string;
+    cargo?: string;
+    gerencia?: string;
+    sitio?: string;
+    codigo_cedi?: string;
   }
 }
 
 declare module "next-auth/jwt" {
-  interface JWT {
-    id?: string;
-    role?: string;
+  interface JWT extends DefaultJWT {
+    dni: string;
+    nombre_completo: string;
+    numero_contacto: string;
+    fecha_nacimiento?: string;
+    genero?: string;
+    foto_perfil?: string;
+    fecha_creacion: string;
+    fecha_actualizacion?: string;
+    estado: boolean;
+    id_zona_ventas?: string;
+    canal?: string;
+    cargo?: string;
+    gerencia?: string;
+    sitio?: string;
+    codigo_cedi?: string;
   }
 }

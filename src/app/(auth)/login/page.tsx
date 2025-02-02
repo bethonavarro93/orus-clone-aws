@@ -1,8 +1,11 @@
 "use client";
-
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { toast } from "sonner";
+import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -10,60 +13,117 @@ import {
   EyeOff,
   Mail,
   Lock,
-  AlertCircle,
   ArrowRight,
   Layout,
   BarChart,
   Shield,
   HeadphonesIcon,
   UserCheck,
+  Loader2,
 } from "lucide-react";
+
+const loginSchema = z.object({
+  email: z
+    .string()
+    .min(1, "El correo electrónico es requerido")
+    .email("Formato de correo electrónico inválido"),
+  password: z
+    .string()
+    .min(1, "La contraseña es requerida")
+    .min(8, "La contraseña debe tener al menos 8 caracteres")
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.])[A-Za-z\d@$!%*?&.]{8,}$/,
+      "La contraseña debe contener al menos una mayúscula, una minúscula, un número y un carácter especial"
+    ),
+  rememberMe: z.boolean().optional(),
+});
+
+type LoginSchema = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const searchParams = useSearchParams();
+
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+  const [error, setError] = useState<string | null>(() => {
+    const error = searchParams?.get("error");
+    if (error) {
+      switch (error) {
+        case "CredentialsSignin":
+          return "Credenciales inválidas";
+        default:
+          return error;
+      }
+    }
+    return null;
+  });
 
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginSchema>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      rememberMe: false,
+    },
+  });
 
+  const getErrorMessage = (error: string | undefined) => {
+    if (!error) return null;
+
+    const errorMessages: Record<string, string> = {
+      CredentialsSignin: "Las credenciales son incorrectas",
+      default: "Ocurrió un error al intentar iniciar sesión",
+    };
+
+    return errorMessages[error] || errorMessages.default;
+  };
+
+  const onSubmit = async (data: LoginSchema) => {
     try {
+      setError(null);
       const result = await signIn("credentials", {
-        email,
-        password,
+        email: data.email,
+        password: data.password,
         redirect: false,
       });
 
       if (result?.error) {
-        setError("Credenciales inválidas");
+        const errorMessage = getErrorMessage(result.error);
+        setError(errorMessage);
+        toast.error(errorMessage);
         return;
       }
 
-      router.push("/home");
-      router.refresh();
+      if (result?.ok) {
+        toast.success("Inicio de sesión exitoso");
+        router.push("/home");
+        router.refresh();
+      }
     } catch (err) {
       console.error("Login error:", err);
-      setError(
-        err instanceof Error ? err.message : "Ocurrió un error inesperado"
-      );
-    } finally {
-      setLoading(false);
+      const errorMessage = "Ocurrió un error inesperado";
+      setError(errorMessage);
+      toast.error(errorMessage);
     }
   };
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
 
   const handleGoogleSignIn = async () => {
     try {
       await signIn("google", { callbackUrl: "/home" });
     } catch (error) {
       console.error("Google sign in error:", error);
+      toast.error("Error al iniciar sesión con Google");
     }
   };
 
@@ -99,7 +159,6 @@ export default function LoginPage() {
               </div>
             </div>
           </div>
-
           {/* Características destacadas */}
           <div className="grid grid-cols-2 gap-6">
             {[
@@ -152,23 +211,18 @@ export default function LoginPage() {
               priority
             />
           </div>
-
           <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
             <div className="space-y-8">
               {/* Ilustración animada */}
               <div className="w-full flex justify-center">
                 <div className="relative w-40 h-40">
-                  {/* Círculo base */}
                   <div className="absolute inset-0 bg-blue-50 rounded-full" />
-                  {/* Círculo animado */}
                   <div className="absolute inset-3 bg-blue-100 rounded-full animate-pulse" />
-                  {/* Icono central */}
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="bg-white p-4 rounded-full shadow-lg">
                       <UserCheck className="w-10 h-10 text-blue-500" />
                     </div>
                   </div>
-                  {/* Elementos decorativos */}
                   <div className="absolute top-0 right-0">
                     <Mail className="w-6 h-6 text-blue-400 animate-bounce" />
                   </div>
@@ -194,18 +248,8 @@ export default function LoginPage() {
                 </p>
               </div>
 
-              {/* Mensaje de error */}
-              {error && (
-                <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-                    <p className="text-red-700 text-sm">{error}</p>
-                  </div>
-                </div>
-              )}
-
               {/* Formulario */}
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 {/* Email */}
                 <div className="space-y-2">
                   <label
@@ -219,18 +263,23 @@ export default function LoginPage() {
                       <Mail className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
-                      id="email"
-                      name="email"
+                      {...register("email")}
                       type="email"
-                      autoComplete="email"
-                      required
-                      className="block w-full pl-10 px-3 py-3 text-gray-900 placeholder-gray-400 
-                               bg-gray-50 border border-gray-300 rounded-lg 
-                               focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
-                               transition-all duration-200 sm:text-sm"
+                      className={`block w-full pl-10 px-3 py-3 text-gray-900 placeholder-gray-400 
+                               bg-gray-50 border rounded-lg transition-all duration-200 sm:text-sm
+                               ${
+                                 errors.email
+                                   ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                                   : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                               }`}
                       placeholder="nombre@empresa.com"
                     />
                   </div>
+                  {errors.email && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.email.message}
+                    </p>
+                  )}
                 </div>
 
                 {/* Contraseña */}
@@ -246,15 +295,16 @@ export default function LoginPage() {
                       <Lock className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
-                      id="password"
-                      name="password"
+                      {...register("password")}
                       type={showPassword ? "text" : "password"}
-                      autoComplete="current-password"
-                      required
-                      className="block w-full pl-10 pr-10 px-3 py-3 text-gray-900 
-                               placeholder-gray-400 bg-gray-50 border border-gray-300 
-                               rounded-lg focus:ring-2 focus:ring-blue-500 
-                               focus:border-blue-500 transition-all duration-200 sm:text-sm"
+                      className={`block w-full pl-10 pr-10 px-3 py-3 text-gray-900 
+                               placeholder-gray-400 bg-gray-50 border rounded-lg 
+                               transition-all duration-200 sm:text-sm
+                               ${
+                                 errors.password
+                                   ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                                   : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                               }`}
                       placeholder="••••••••"
                     />
                     <button
@@ -269,28 +319,26 @@ export default function LoginPage() {
                       )}
                     </button>
                   </div>
+                  {errors.password && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.password.message}
+                    </p>
+                  )}
                 </div>
 
-                {/* Opciones adicionales */}
+                {/* Recordarme */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <input
-                      id="remember-me"
-                      name="remember-me"
+                      {...register("rememberMe")}
                       type="checkbox"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 
                                border-gray-300 rounded transition-colors"
                     />
-                    <label
-                      htmlFor="remember-me"
-                      className="ml-2 block text-sm text-gray-700"
-                    >
+                    <label className="ml-2 block text-sm text-gray-700">
                       Recordarme
                     </label>
                   </div>
-
                   <Link
                     href="/forgot-password"
                     className="text-sm font-medium text-blue-600 hover:text-blue-500 
@@ -300,117 +348,71 @@ export default function LoginPage() {
                   </Link>
                 </div>
 
-                {/* Botones de acción */}
-                <div className="space-y-4">
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full group flex items-center justify-center px-6 py-4 
-                             bg-gradient-to-r from-blue-600 to-blue-700
-                             text-white rounded-lg font-medium text-lg
-                             transition-all duration-200
-                             hover:from-blue-700 hover:to-blue-800 
-                             focus:outline-none focus:ring-2 
-                             focus:ring-offset-2 focus:ring-blue-500
-                             transform hover:-translate-y-0.5
-                             disabled:opacity-50 disabled:cursor-not-allowed
-                             shadow-lg hover:shadow-xl"
-                  >
-                    {loading ? (
-                      <div className="flex items-center">
-                        <svg
-                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        Iniciando sesión...
-                      </div>
-                    ) : (
-                      <div className="flex items-center">
-                        <span>Iniciar sesión</span>
-                        <ArrowRight
-                          className="ml-2 h-5 w-5 transition-transform 
-                                           duration-200 group-hover:translate-x-1"
-                        />
-                      </div>
-                    )}
-                  </button>
+                {/* Botón de submit */}
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full group flex items-center justify-center px-6 py-4 
+                           bg-gradient-to-r from-blue-600 to-blue-700
+                           text-white rounded-lg font-medium text-lg
+                           transition-all duration-200
+                           hover:from-blue-700 hover:to-blue-800 
+                           focus:outline-none focus:ring-2 
+                           focus:ring-offset-2 focus:ring-blue-500
+                           transform hover:-translate-y-0.5
+                           disabled:opacity-50 disabled:cursor-not-allowed
+                           shadow-lg hover:shadow-xl"
+                >
+                  {isSubmitting ? (
+                    <div className="flex items-center">
+                      <Loader2 className="animate-spin mr-2 h-5 w-5" />
+                      <span>Iniciando sesión...</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center">
+                      <span>Iniciar sesión</span>
+                      <ArrowRight
+                        className="ml-2 h-5 w-5 transition-transform 
+                                         duration-200 group-hover:translate-x-1"
+                      />
+                    </div>
+                  )}
+                </button>
 
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-gray-200" />
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                      <span className="px-2 bg-white text-gray-500">
-                        O continúa con
-                      </span>
-                    </div>
+                {/* Separador */}
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-200" />
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={handleGoogleSignIn}
-                    className="w-full flex items-center justify-center gap-3 px-4 py-3 
-                             bg-white text-gray-700 text-sm font-medium rounded-lg 
-                             border border-gray-300 hover:bg-gray-50 
-                             transition-all duration-200
-                             focus:outline-none focus:ring-2 
-                             focus:ring-offset-2 focus:ring-blue-500
-                             transform hover:-translate-y-0.5 shadow-sm hover:shadow-md"
-                  >
-                    <Image
-                      src="/logos/google.png"
-                      alt="Google"
-                      width={20}
-                      height={20}
-                    />
-                    Continuar con Google
-                  </button>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-gray-500">
+                      O continúa con
+                    </span>
+                  </div>
                 </div>
+
+                {/* Botón de Google */}
+                <button
+                  type="button"
+                  onClick={handleGoogleSignIn}
+                  className="w-full flex items-center justify-center gap-3 px-4 py-3 
+                           bg-white text-gray-700 text-sm font-medium rounded-lg 
+                           border border-gray-300 hover:bg-gray-50 
+                           transition-all duration-200
+                           focus:outline-none focus:ring-2 
+                           focus:ring-offset-2 focus:ring-blue-500
+                           transform hover:-translate-y-0.5 shadow-sm hover:shadow-md"
+                >
+                  <Image
+                    src="/logos/google.png"
+                    alt="Google"
+                    width={20}
+                    height={20}
+                  />
+                  Continuar con Google
+                </button>
               </form>
             </div>
-          </div>
-
-          {/* Footer */}
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-6 text-sm text-gray-500">
-              <Link
-                href="#"
-                className="hover:text-gray-700 transition-colors flex items-center gap-1 hover:underline"
-              >
-                Información
-              </Link>
-              <Link
-                href="#"
-                className="hover:text-gray-700 transition-colors hover:underline"
-              >
-                Centro de ayuda
-              </Link>
-              <Link
-                href="#"
-                className="hover:text-gray-700 transition-colors hover:underline"
-              >
-                Sitio web
-              </Link>
-            </div>
-            <p className="mt-4 text-xs text-gray-500">
-              © {new Date().getFullYear()} ORUS. Todos los derechos reservados.
-            </p>
           </div>
         </div>
       </div>

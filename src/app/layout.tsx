@@ -6,6 +6,7 @@ import { NextAuthProvider } from "@/components/providers/AuthProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { LoadingProvider } from "@/components/providers/LoadingProvider";
 import { SessionExpirationProvider } from "@/components/providers/SessionExpirationProvider";
+import { Toaster } from 'sonner';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,7 +22,10 @@ export default function RootLayout({ children }: LayoutProps) {
         <ThemeProvider>
           <NextAuthProvider>
             <SessionExpirationProvider>
-              <LoadingProvider>{children}</LoadingProvider>
+              <LoadingProvider>
+                {children}
+                <Toaster richColors position="bottom-right" />
+              </LoadingProvider>
             </SessionExpirationProvider>
           </NextAuthProvider>
         </ThemeProvider>

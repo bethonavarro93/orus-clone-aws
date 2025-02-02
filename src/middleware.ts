@@ -4,14 +4,26 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { APP_CONFIG } from "@/config/constants";
 import { isCompanyEmail, isPublicRoute } from "@/utils/auth";
-import type { AppSession } from "@/types/auth";
+import type { Session } from "next-auth";
+
+// Extendemos el tipo Session para nuestro caso específico
+interface ExtendedSession extends Session {
+  user: {
+    id: string;
+    dni: string;
+    email: string;
+    nombre_completo: string;
+    cargo?: string; // Usaremos esto en lugar de role
+    // ... otros campos que necesites
+  } & Session["user"];
+}
 
 type MiddlewareLogDetails = {
   pathname?: string;
   session?: boolean;
   user?: {
     email?: string;
-    role?: string;
+    cargo?: string; // Cambiamos role por cargo
   };
   error?: unknown;
   [key: string]: unknown;
@@ -25,17 +37,20 @@ const logMiddlewareAction = (action: string, details: MiddlewareLogDetails) => {
 
 export async function middleware(request: NextRequest) {
   try {
-    const session = (await auth()) as AppSession;
+    const session = (await auth()) as ExtendedSession;
     const { pathname } = request.nextUrl;
 
     logMiddlewareAction("Request", {
       pathname,
       session: !!session,
-      user: session?.user,
+      user: {
+        email: session?.user?.email,
+        cargo: session?.user?.cargo,
+      },
     });
 
     // Manejo de usuarios autenticados
-    if (session) {
+    if (session?.user) {
       // Redirigir desde rutas públicas
       if (isPublicRoute(pathname)) {
         logMiddlewareAction("Redirect from public route", {
@@ -47,7 +62,7 @@ export async function middleware(request: NextRequest) {
         );
       }
 
-      const isCompanyUser = isCompanyEmail(session.user?.email);
+      const isCompanyUser = isCompanyEmail(session.user.email);
 
       // Redirigir usuarios externos
       if (
@@ -55,7 +70,7 @@ export async function middleware(request: NextRequest) {
         !pathname.startsWith(APP_CONFIG.PROTECTED_PATHS.HOME_EXTERNAL)
       ) {
         logMiddlewareAction("External User Redirect", {
-          email: session.user?.email,
+          email: session.user.email,
           from: pathname,
           to: APP_CONFIG.PROTECTED_PATHS.HOME_EXTERNAL,
         });
@@ -70,7 +85,7 @@ export async function middleware(request: NextRequest) {
         pathname.startsWith(APP_CONFIG.PROTECTED_PATHS.HOME_EXTERNAL)
       ) {
         logMiddlewareAction("Internal User Redirect", {
-          email: session.user?.email,
+          email: session.user.email,
           from: pathname,
           to: APP_CONFIG.PROTECTED_PATHS.HOME,
         });
@@ -79,13 +94,16 @@ export async function middleware(request: NextRequest) {
         );
       }
 
-      // Verificar permisos de admin
+      // Verificar permisos de admin (usando cargo en lugar de role)
       if (
         pathname.startsWith(APP_CONFIG.PROTECTED_PATHS.ADMIN) &&
-        session.user?.role !== "admin"
+        session.user.cargo?.toLowerCase() !== "admin"
       ) {
         logMiddlewareAction("Unauthorized Admin Access", {
-          user: session.user,
+          user: {
+            email: session.user.email,
+            cargo: session.user.cargo,
+          },
           pathname,
         });
         return NextResponse.redirect(new URL("/forbidden", request.url));
