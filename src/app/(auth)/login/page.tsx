@@ -1,11 +1,12 @@
 "use client";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -30,11 +31,7 @@ const loginSchema = z.object({
   password: z
     .string()
     .min(1, "La contraseña es requerida")
-    .min(8, "La contraseña debe tener al menos 8 caracteres")
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.])[A-Za-z\d@$!%*?&.]{8,}$/,
-      "La contraseña debe contener al menos una mayúscula, una minúscula, un número y un carácter especial"
-    ),
+    .min(6, "La contraseña debe tener al menos 6 caracteres"),
   rememberMe: z.boolean().optional(),
 });
 
@@ -42,22 +39,7 @@ type LoginSchema = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-
   const [showPassword, setShowPassword] = useState(false);
-
-  const [error, setError] = useState<string | null>(() => {
-    const error = searchParams?.get("error");
-    if (error) {
-      switch (error) {
-        case "CredentialsSignin":
-          return "Credenciales inválidas";
-        default:
-          return error;
-      }
-    }
-    return null;
-  });
 
   const {
     register,
@@ -72,55 +54,49 @@ export default function LoginPage() {
     },
   });
 
-  const getErrorMessage = (error: string | undefined) => {
-    if (!error) return null;
-
-    const errorMessages: Record<string, string> = {
-      CredentialsSignin: "Las credenciales son incorrectas",
-      default: "Ocurrió un error al intentar iniciar sesión",
-    };
-
-    return errorMessages[error] || errorMessages.default;
-  };
-
   const onSubmit = async (data: LoginSchema) => {
     try {
-      setError(null);
       const result = await signIn("credentials", {
         email: data.email,
         password: data.password,
         redirect: false,
       });
 
-      if (result?.error) {
-        const errorMessage = getErrorMessage(result.error);
-        setError(errorMessage);
-        toast.error(errorMessage);
-        return;
-      }
-
       if (result?.ok) {
+        // Verificamos si hay una redirección especial
+        const redirectUrl = result.url;
+        if (redirectUrl?.includes("/account-pending")) {
+          toast.error("Tu cuenta está pendiente de activación");
+          router.push("/account-pending");
+          return;
+        }
+
         toast.success("Inicio de sesión exitoso");
         router.push("/home");
         router.refresh();
+        return;
+      }
+
+      if (result?.error) {
+        toast.error("Credenciales inválidas");
+        return;
       }
     } catch (err) {
       console.error("Login error:", err);
-      const errorMessage = "Ocurrió un error inesperado";
-      setError(errorMessage);
-      toast.error(errorMessage);
+      toast.error("Error inesperado al iniciar sesión");
     }
   };
 
-  useEffect(() => {
-    if (error) {
-      toast.error(error);
-    }
-  }, [error]);
-
   const handleGoogleSignIn = async () => {
     try {
-      await signIn("google", { callbackUrl: "/home" });
+      const result = await signIn("google", {
+        redirect: false,
+        callbackUrl: "/home",
+      });
+
+      if (result?.error) {
+        toast.error("Error al iniciar sesión con Google");
+      }
     } catch (error) {
       console.error("Google sign in error:", error);
       toast.error("Error al iniciar sesión con Google");
@@ -159,6 +135,7 @@ export default function LoginPage() {
               </div>
             </div>
           </div>
+
           {/* Características destacadas */}
           <div className="grid grid-cols-2 gap-6">
             {[
@@ -249,7 +226,11 @@ export default function LoginPage() {
               </div>
 
               {/* Formulario */}
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <form
+                onSubmit={handleSubmit(onSubmit)}
+                className="space-y-6"
+                autoComplete="off"
+              >
                 {/* Email */}
                 <div className="space-y-2">
                   <label
@@ -273,6 +254,7 @@ export default function LoginPage() {
                                    : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                }`}
                       placeholder="nombre@empresa.com"
+                      autoComplete="new-email"
                     />
                   </div>
                   {errors.email && (
@@ -306,6 +288,7 @@ export default function LoginPage() {
                                    : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                }`}
                       placeholder="••••••••"
+                      autoComplete="new-password"
                     />
                     <button
                       type="button"
@@ -326,7 +309,7 @@ export default function LoginPage() {
                   )}
                 </div>
 
-                {/* Recordarme */}
+                {/* Recordarme y Olvidé contraseña */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <input

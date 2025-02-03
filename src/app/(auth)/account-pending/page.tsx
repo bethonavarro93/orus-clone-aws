@@ -196,6 +196,25 @@ export default function AccountPendingPage() {
                 </div>
               </button>
 
+              {/* Cerrar sesión */}
+              <button
+                onClick={handleLogin}
+                className="w-full group flex items-center justify-center px-6 py-3 
+                       text-white rounded-lg font-medium
+                       bg-blue-600
+                       transition-all duration-200
+                       hover:bg-blue-700
+                       focus:outline-none focus:ring-2 
+                       focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <div className="flex items-center">
+                  <span>Cerrar sesión</span>
+                  <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
+                </div>
+              </button>
+              
+
+
               <div className="text-center">
                 <p className="text-sm text-gray-500">
                   ¿Necesitas ayuda? {" "}
