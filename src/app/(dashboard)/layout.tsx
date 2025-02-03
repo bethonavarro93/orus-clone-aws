@@ -13,7 +13,7 @@ export default function DashboardLayout({ children }: LayoutProps) {
         {/* <Sidebar /> */}
         <main className="flex-1">
           {children}
-        <Toaster />
+          <Toaster richColors position="bottom-right" />
         </main>
       </div>
       <Footer />

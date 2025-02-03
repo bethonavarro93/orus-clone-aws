@@ -15,7 +15,11 @@ import {
   Eye,
   EyeOff,
   Check,
+  ChevronDown,
 } from "lucide-react";
+import client from "@/config/aws-config";
+import { toast } from "sonner";
+import { SHA256 } from "crypto-js";
 
 interface FormData {
   fullName: string;
@@ -24,15 +28,158 @@ interface FormData {
   password: string;
   confirmPassword: string;
   phone: string;
+  countryCode: string;
 }
+
+interface CountryCode {
+  code: string;
+  name: string;
+  flag: string;
+  dial_code: string;
+}
+
+interface GraphQLResponse {
+  data?: {
+    getMaestroUsuariosByEmail?: {
+      dni: string;
+      email: string;
+      estado: boolean;
+      numero_contacto: string;
+      nombre_completo: string;
+    };
+    createMaestroUsuarios?: {
+      dni: string;
+      email: string;
+    };
+    listMaestroUsuarios?: {
+      items: Array<{
+        dni: string;
+        email: string;
+        numero_contacto: string;
+      }>;
+    };
+  };
+  errors?: Array<{
+    message: string;
+    path?: string[];
+    errorType?: string;
+  }>;
+}
+
+// Actualizar las interfaces existentes y añadir nuevas
+interface GraphQLResult<T> {
+  data?: T;
+  errors?: Array<{
+    message: string;
+    path?: string[];
+    errorType?: string;
+  }>;
+}
+
+interface UserData {
+  dni: string;
+  email: string;
+  estado?: boolean;
+  numero_contacto: string;
+  nombre_completo?: string;
+}
+
+interface MaestroUsuariosResponse {
+  getMaestroUsuariosByEmail?: UserData;
+  createMaestroUsuarios?: UserData;
+  listMaestroUsuarios?: {
+    items: UserData[];
+  };
+}
+
+const COUNTRY_CODES: CountryCode[] = [
+  { code: "CO", name: "Colombia", flag: "🇨🇴", dial_code: "+57" },
+  { code: "PE", name: "Perú", flag: "🇵🇪", dial_code: "+51" },
+  { code: "EC", name: "Ecuador", flag: "🇪🇨", dial_code: "+593" },
+];
+
+const CHECK_DNI_QUERY = `
+  query GetByDni($dni: String) {
+    listMaestroUsuarios(filter: {dni: {eq: $dni}}) {
+      items {
+        dni
+        email
+        numero_contacto
+      }
+    }
+  }
+`;
+
+const CHECK_EMAIL_QUERY = `
+  query GetByEmail($email: String) {
+    listMaestroUsuarios(filter: {email: {eq: $email}}) {
+      items {
+        dni
+        email
+        numero_contacto
+      }
+    }
+  }
+`;
+
+const CHECK_PHONE_QUERY = `
+  query GetByNumeroContacto($numero_contacto: String) {
+    listMaestroUsuarios(filter: {numero_contacto: {eq: $numero_contacto}}) {
+      items {
+        dni
+        email
+        numero_contacto
+      }
+    }
+  }
+`;
+
+const REGISTER_USER_MUTATION = `
+  mutation RegistroUsuario(
+    $contrasena: String!, 
+    $dni: String!, 
+    $email: AWSEmail!, 
+    $estado: Boolean!, 
+    $fecha_creacion: AWSDateTime!, 
+    $nombre_completo: String!, 
+    $numero_contacto: AWSPhone!
+  ) {
+    createMaestroUsuarios(
+      input: {
+        dni: $dni, 
+        email: $email, 
+        nombre_completo: $nombre_completo, 
+        numero_contacto: $numero_contacto, 
+        contrasena: $contrasena, 
+        fecha_creacion: $fecha_creacion, 
+        estado: $estado
+      }
+    ) {
+      dni
+      email
+    }
+  }
+`;
+
+const passwordChecks = {
+  minLength: (password: string) => password.length >= 6,
+  hasUpperLower: (password: string) => /(?=.*[a-z])(?=.*[A-Z])/.test(password),
+  hasNumber: (password: string) => /\d/.test(password),
+  hasSpecial: (password: string) => /[$&#@*]/.test(password),
+};
+
+// Añadir esta función después de las constantes
+const encryptPassword = (password: string): string => {
+  return SHA256(password).toString();
+};
 
 export default function RegisterPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isFormValid, setIsFormValid] = useState(false);
+  const [showCountrySelector, setShowCountrySelector] = useState(false);
+  const [isFormComplete, setIsFormComplete] = useState(false);
 
   const [formData, setFormData] = useState<FormData>({
     fullName: "",
@@ -41,98 +188,160 @@ export default function RegisterPage() {
     password: "",
     confirmPassword: "",
     phone: "",
+    countryCode: COUNTRY_CODES[0].dial_code,
   });
 
-  // Validaciones
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const validatePassword = (password: string) => {
-    const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$&#@*])[A-Za-z\d$&#@*]{6,}$/;
-    return passwordRegex.test(password);
-  };
-
-  const validateDNI = (dni: string) => {
-    return /^\d{8}$/.test(dni);
-  };
-
-  const validatePhone = (phone: string) => {
-    const phoneRegex = /^\+?[\d\s-]{9,}$/;
-    return phoneRegex.test(phone);
-  };
-
-  // Verificar requisitos específicos de la contraseña
-  const passwordChecks = {
-    minLength: (password: string) => password.length >= 6,
-    hasUpperLower: (password: string) =>
-      /(?=.*[a-z])(?=.*[A-Z])/.test(password),
-    hasNumber: (password: string) => /\d/.test(password),
-    hasSpecial: (password: string) => /[$&#@*]/.test(password),
-  };
-
-  // Validar formulario completo
+  // Verificar si el formulario está completo
   useEffect(() => {
-    const isValid =
+    const allFieldsFilled =
       formData.fullName.trim() !== "" &&
-      validateEmail(formData.email) &&
-      validateDNI(formData.dni) &&
-      validatePassword(formData.password) &&
+      formData.email.trim() !== "" &&
+      formData.dni.trim().length === 10 &&
+      formData.phone.trim().length === 10 &&
+      formData.password.trim() !== "" &&
+      formData.confirmPassword.trim() !== "" &&
       formData.password === formData.confirmPassword &&
-      validatePhone(formData.phone);
+      passwordChecks.minLength(formData.password) &&
+      passwordChecks.hasUpperLower(formData.password) &&
+      passwordChecks.hasNumber(formData.password) &&
+      passwordChecks.hasSpecial(formData.password);
 
-    setIsFormValid(isValid);
+    setIsFormComplete(allFieldsFilled);
   }, [formData]);
+
+  // Función para capitalizar nombres
+  const capitalizeNames = (name: string) => {
+    return name
+      .toLowerCase()
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
+  const checkExistingData = async () => {
+    try {
+      // Verificar DNI
+      const dniResponse = await client.graphql<
+        GraphQLResult<MaestroUsuariosResponse>
+      >({
+        query: CHECK_DNI_QUERY,
+        variables: { dni: formData.dni },
+        authMode: "apiKey",
+      });
+
+      if (dniResponse.data?.listMaestroUsuarios?.items?.length > 0) {
+        toast.error("Este número de documento ya está registrado");
+        return false;
+      }
+
+      // Verificar Email
+      const emailResponse = await client.graphql<
+        GraphQLResult<MaestroUsuariosResponse>
+      >({
+        query: CHECK_EMAIL_QUERY,
+        variables: { email: formData.email.toLowerCase() },
+        authMode: "apiKey",
+      });
+
+      if (emailResponse.data?.listMaestroUsuarios?.items.length > 0) {
+        toast.error("Este correo electrónico ya está registrado");
+        return false;
+      }
+
+      // Verificar Número de contacto
+      const phoneNumber = `${formData.countryCode}${formData.phone}`;
+      const phoneResponse = await client.graphql({
+        query: CHECK_PHONE_QUERY,
+        variables: { numero_contacto: phoneNumber },
+        authMode: "apiKey",
+      });
+
+      if (phoneResponse.data?.listMaestroUsuarios?.items?.length > 0) {
+        toast.error("Este número de teléfono ya está registrado");
+        return false;
+      }
+
+      return true;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("Error al verificar datos:", error);
+        toast.error(error.message || "Error al verificar los datos");
+      }
+      return false;
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    let newValue = value;
+
+    if (name === "fullName") {
+      newValue = capitalizeNames(value);
+    }
+
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: newValue,
     }));
-    setError(null);
+  };
+
+  const selectCountry = (country: CountryCode) => {
+    setFormData((prev) => ({
+      ...prev,
+      countryCode: country.dial_code,
+      phone: prev.phone.replace(prev.countryCode, country.dial_code),
+    }));
+    setShowCountrySelector(false);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError(null);
 
-    if (!validateEmail(formData.email)) {
-      setError("Por favor, ingresa un correo electrónico válido");
-      return;
-    }
-
-    if (!validatePassword(formData.password)) {
-      setError("La contraseña no cumple con los requisitos mínimos");
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setError("Las contraseñas no coinciden");
-      return;
-    }
-
-    if (!validateDNI(formData.dni)) {
-      setError("El DNI debe tener 8 dígitos");
-      return;
-    }
-
-    if (!validatePhone(formData.phone)) {
-      setError("Por favor, ingresa un número de teléfono válido");
+    if (!isFormComplete) {
+      toast.error("Por favor, completa todos los campos correctamente");
       return;
     }
 
     setIsLoading(true);
 
     try {
-      // Simular llamada a API
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      router.push("/login");
-    } catch (err) {
-      setError("Error al crear la cuenta. Por favor, intenta nuevamente.");
-      console.error(err);
+      const isUnique = await checkExistingData();
+      if (!isUnique) {
+        setIsLoading(false);
+        return;
+      }
+
+      const registerVariables = {
+        nombre_completo: formData.fullName.trim(),
+        dni: formData.dni.trim(),
+        numero_contacto: `${formData.countryCode}${formData.phone.trim()}`,
+        email: formData.email.toLowerCase().trim(),
+        contrasena: encryptPassword(formData.password), // Encriptación añadida
+        estado: false,
+        fecha_creacion: new Date().toISOString(),
+      };
+
+      const response = await client.graphql<GraphQLResponse>({
+        query: REGISTER_USER_MUTATION,
+        variables: registerVariables,
+        authMode: "apiKey",
+      });
+
+      if (response.data?.createMaestroUsuarios) {
+        toast.success("Cuenta creada exitosamente");
+        setTimeout(() => {
+          router.push("/login");
+        }, 2000);
+      } else {
+        throw new Error("No se pudo crear la cuenta");
+      }
+    } catch (error: unknown) {
+      console.error("Error:", error);
+      if (error instanceof Error) {
+        toast.error(error.message || "Error al crear la cuenta");
+      } else {
+        toast.error("Error inesperado al crear la cuenta");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -196,7 +405,7 @@ export default function RegisterPage() {
 
       {/* Contenido principal */}
       <div className="flex-1 flex items-center justify-center p-8 bg-gray-50">
-        <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md space-y-6">
+        <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-2xl space-y-6">
           <div className="flex flex-col items-center space-y-2">
             <div className="p-3 bg-blue-100 rounded-full">
               <UserPlus className="w-6 h-6 text-blue-600" />
@@ -209,13 +418,7 @@ export default function RegisterPage() {
             </p>
           </div>
 
-          {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm text-center">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
             {/* Nombre Completo */}
             <div className="space-y-2">
               <label
@@ -234,15 +437,15 @@ export default function RegisterPage() {
                   type="text"
                   value={formData.fullName}
                   onChange={handleInputChange}
-                  className="block w-full pl-10 px-3 py-2 border rounded-lg
-                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  autoComplete="new-name"
+                  className="block w-full pl-10 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
                   required
                 />
               </div>
             </div>
 
-            {/* DNI y Teléfono en grid */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-6">
+              {/* DNI */}
               <div className="space-y-2">
                 <label
                   htmlFor="dni"
@@ -260,23 +463,84 @@ export default function RegisterPage() {
                     type="text"
                     value={formData.dni}
                     onChange={handleInputChange}
-                    className="block w-full pl-10 px-3 py-2 border rounded-lg
-                             focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    maxLength={8}
-                    placeholder="12345678"
+                    autoComplete="new-dni"
+                    className="block w-full pl-10 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
+                    maxLength={10}
+                    placeholder="1234567890"
                     required
                   />
                 </div>
               </div>
 
+              {/* Email */}
               <div className="space-y-2">
                 <label
-                  htmlFor="phone"
+                  htmlFor="email"
                   className="text-sm font-medium text-gray-700"
                 >
-                  Teléfono
+                  Correo Electrónico
                 </label>
                 <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Mail className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    autoComplete="new-email"
+                    className="block w-full pl-10 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
+                    placeholder="nombre@empresa.com"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Teléfono */}
+            <div className="space-y-2">
+              <label
+                htmlFor="phone"
+                className="text-sm font-medium text-gray-700"
+              >
+                Teléfono
+              </label>
+              <div className="flex gap-4">
+                <div className="relative w-1/3">
+                  <button
+                    type="button"
+                    onClick={() => setShowCountrySelector(!showCountrySelector)}
+                    className="flex items-center justify-between w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    disabled
+                  >
+                    {
+                      COUNTRY_CODES.find(
+                        (c) => c.dial_code === formData.countryCode
+                      )?.flag
+                    }
+                    <span className="mx-2">{formData.countryCode}</span>
+                    <ChevronDown className="h-4 w-4" />
+                  </button>
+                  {showCountrySelector && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg">
+                      {COUNTRY_CODES.map((country) => (
+                        <button
+                          key={country.code}
+                          type="button"
+                          className="flex items-center w-full px-4 py-2 hover:bg-gray-100"
+                          onClick={() => selectCountry(country)}
+                        >
+                          <span className="mr-2">{country.flag}</span>
+                          <span>{country.name}</span>
+                          <span className="ml-auto">{country.dial_code}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="relative flex-1">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Phone className="h-5 w-5 text-gray-400" />
                   </div>
@@ -286,43 +550,17 @@ export default function RegisterPage() {
                     type="tel"
                     value={formData.phone}
                     onChange={handleInputChange}
-                    className="block w-full pl-10 px-3 py-2 border rounded-lg
-                             focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="+51 999 999 999"
+                    autoComplete="new-phone"
+                    className="block w-full pl-10 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
+                    placeholder="9999999999"
                     required
                   />
                 </div>
               </div>
             </div>
 
-            {/* Email */}
-            <div className="space-y-2">
-              <label
-                htmlFor="email"
-                className="text-sm font-medium text-gray-700"
-              >
-                Correo Electrónico
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="block w-full pl-10 px-3 py-2 border rounded-lg
-                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="nombre@empresa.com"
-                  required
-                />
-              </div>
-            </div>
-
             {/* Contraseñas en grid */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label
                   htmlFor="password"
@@ -340,8 +578,8 @@ export default function RegisterPage() {
                     type={showPassword ? "text" : "password"}
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="block w-full pl-10 pr-10 px-3 py-2 border rounded-lg
-                             focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    autoComplete="new-password"
+                    className="block w-full pl-10 pr-10 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
                     required
                   />
                   <button
@@ -375,8 +613,8 @@ export default function RegisterPage() {
                     type={showConfirmPassword ? "text" : "password"}
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
-                    className="block w-full pl-10 pr-10 px-3 py-2 border rounded-lg
-                             focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    autoComplete="new-password"
+                    className="block w-full pl-10 pr-10 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
                     required
                   />
                   <button
@@ -401,74 +639,51 @@ export default function RegisterPage() {
                 Requisitos de la contraseña
               </h4>
               <div className="grid grid-cols-1 gap-2">
-                <div
-                  className={`flex items-center space-x-2 text-sm ${
-                    passwordChecks.minLength(formData.password)
-                      ? "text-green-600"
-                      : "text-gray-600"
-                  }`}
-                >
-                  {passwordChecks.minLength(formData.password) ? (
-                    <Check className="h-4 w-4 text-green-500" />
-                  ) : (
-                    <div className="h-4 w-4 rounded-full border border-gray-300" />
-                  )}
-                  <span>Mínimo 6 caracteres</span>
-                </div>
-                <div
-                  className={`flex items-center space-x-2 text-sm ${
-                    passwordChecks.hasUpperLower(formData.password)
-                      ? "text-green-600"
-                      : "text-gray-600"
-                  }`}
-                >
-                  {passwordChecks.hasUpperLower(formData.password) ? (
-                    <Check className="h-4 w-4 text-green-500" />
-                  ) : (
-                    <div className="h-4 w-4 rounded-full border border-gray-300" />
-                  )}
-                  <span>Al menos una mayúscula y una minúscula</span>
-                </div>
-                <div
-                  className={`flex items-center space-x-2 text-sm ${
-                    passwordChecks.hasNumber(formData.password)
-                      ? "text-green-600"
-                      : "text-gray-600"
-                  }`}
-                >
-                  {passwordChecks.hasNumber(formData.password) ? (
-                    <Check className="h-4 w-4 text-green-500" />
-                  ) : (
-                    <div className="h-4 w-4 rounded-full border border-gray-300" />
-                  )}
-                  <span>Al menos un número</span>
-                </div>
-                <div
-                  className={`flex items-center space-x-2 text-sm ${
-                    passwordChecks.hasSpecial(formData.password)
-                      ? "text-green-600"
-                      : "text-gray-600"
-                  }`}
-                >
-                  {passwordChecks.hasSpecial(formData.password) ? (
-                    <Check className="h-4 w-4 text-green-500" />
-                  ) : (
-                    <div className="h-4 w-4 rounded-full border border-gray-300" />
-                  )}
-                  <span>Al menos un carácter especial ($&#@*)</span>
-                </div>
+                {[
+                  {
+                    check: passwordChecks.minLength(formData.password),
+                    text: "Mínimo 6 caracteres",
+                  },
+                  {
+                    check: passwordChecks.hasUpperLower(formData.password),
+                    text: "Al menos una mayúscula y una minúscula",
+                  },
+                  {
+                    check: passwordChecks.hasNumber(formData.password),
+                    text: "Al menos un número",
+                  },
+                  {
+                    check: passwordChecks.hasSpecial(formData.password),
+                    text: "Al menos un carácter especial ($&#@*)",
+                  },
+                ].map((requirement, index) => (
+                  <div
+                    key={index}
+                    className={`flex items-center space-x-2 text-sm ${
+                      requirement.check ? "text-green-600" : "text-gray-600"
+                    }`}
+                  >
+                    {requirement.check ? (
+                      <Check className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <div className="h-4 w-4 rounded-full border border-gray-300" />
+                    )}
+                    <span>{requirement.text}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
+            {/* Botón de registro */}
             <button
               type="submit"
-              disabled={!isFormValid || isLoading}
+              disabled={!isFormComplete || isLoading}
               className="w-full flex items-center justify-center px-4 py-3 
-                     bg-blue-600 text-white rounded-lg font-medium
-                     disabled:bg-blue-300 disabled:cursor-not-allowed
-                     transition-colors duration-200
-                     hover:bg-blue-700 focus:outline-none focus:ring-2 
-                     focus:ring-offset-2 focus:ring-blue-500"
+                         bg-blue-600 text-white rounded-lg font-medium
+                         disabled:bg-blue-300 disabled:cursor-not-allowed
+                         transition-colors duration-200
+                         hover:bg-blue-700 focus:outline-none focus:ring-2 
+                         focus:ring-offset-2 focus:ring-blue-500"
             >
               {isLoading ? (
                 <>

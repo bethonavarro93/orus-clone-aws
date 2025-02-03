@@ -1,4 +1,5 @@
 import { Amplify } from 'aws-amplify';
+import { generateClient } from '@aws-amplify/api';
 
 Amplify.configure({
   API: {
@@ -11,5 +12,10 @@ Amplify.configure({
   }
 });
 
+// Crear cliente con la configuración
+const client = generateClient();
+
 // Verificación de configuración
 console.log('AWS Amplify configurado:', Amplify.getConfig());
+
+export default client;
